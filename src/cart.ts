@@ -8,31 +8,27 @@ function createCart() {
     totalItems: 0
   })
   let computedStore = derived(cartStore, updatedCartStore => {
-    console.log("Update on cartstore:", updatedCartStore)
-    updatedCartStore.items = updatedCartStore.items.filter(item => item.quantity > 0)
+    updatedCartStore.items = updatedCartStore.items.filter(item => item.quantity > 0) // remove items when quantity > 0
     updatedCartStore.items.forEach(item => {
-      item.totalPrice = item.product.price.multiply(item.quantity)
+      item.totalPrice = item.product.price.multiply(item.quantity) // calc total price for each item
     })
-    updatedCartStore.totalPrice = updatedCartStore.items.reduce((a, b) => a.add(b.totalPrice), Dinero({ amount: 0, currency: "USD" }))
-    updatedCartStore.totalItems = updatedCartStore.items.reduce((a, b) => a + b.quantity, 0)
-
-    // 2do update totalPrice
-    // ..
-    return updatedCartStore
+    updatedCartStore.totalPrice = updatedCartStore.items.reduce((a, b) => a.add(b.totalPrice), Dinero({ amount: 0, currency: "USD" })) // calc tot price for all products
+    updatedCartStore.totalItems = updatedCartStore.items.reduce((a, b) => a + b.quantity, 0) // calc how many items in  cart
+    return updatedCartStore // return updated cart store
   })
   return {
     subscribe: computedStore.subscribe,
     add: function (product) {
-      if (this.findItem(get(cartStore), product)) {
+      if (this.findItem(get(cartStore), product)) { // if item is in cart 
         cartStore.update(currentCart => {
           let currentItem = this.findItem(currentCart, product)
-          currentItem.quantity++;
+          currentItem.quantity++; // -> change quantity
           return currentCart;
         })
       }
-      else {
+      else { // if item is not in cart
         cartStore.update(cartStore => {
-          cartStore.items.push({
+          cartStore.items.push({ // add product to cart
             product: product,
             totalPrice: product.price,
             quantity: 1
